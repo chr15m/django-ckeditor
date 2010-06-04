@@ -62,16 +62,23 @@ def create_thumbnail(filename):
     imagefit = ImageOps.fit(image, THUMBNAIL_SIZE, Image.ANTIALIAS)
     imagefit.save(get_thumb_filename(filename))
         
-def get_media_url(path):
+def get_media_url(path, username=""):
     """
     Determine system file's media url.
     """
     upload_url = getattr(settings, "CKEDITOR_UPLOAD_PREFIX", None)
+    userdir = username and username + "/" or ""
     if upload_url:
-        url = upload_url + os.path.basename(path)
+        url = upload_url + userdir + os.path.basename(path)
     else:
-        url = settings.MEDIA_URL + path.split(settings.MEDIA_ROOT)[1]
+        url = settings.MEDIA_URL + userdir + path.split(settings.MEDIA_ROOT)[1]
     return url
+
+def get_user_dir(username):
+    basedir = os.path.join(settings.CKEDITOR_UPLOAD_PATH, username)
+    if not os.path.isdir(basedir):
+        os.mkdir(basedir)
+    return basedir
 
 @csrf_exempt
 def upload(request):
@@ -85,7 +92,10 @@ def upload(request):
     upload = request.FILES['upload']
 
     # determine destination filename
-    destination_filename = get_available_name(os.path.join(settings.CKEDITOR_UPLOAD_PATH, upload.name))
+    if getattr(settings, "CKEDITOR_PER_USER", False):
+        destination_filename = get_available_name(os.path.join(get_user_dir(request.user.username), upload.name))
+    else:
+        destination_filename = get_available_name(os.path.join(settings.CKEDITOR_UPLOAD_PATH, upload.name))
      
     # iterate through chunks and write to destination
     destination = open(destination_filename, 'wb+')
@@ -95,7 +105,7 @@ def upload(request):
 
     create_thumbnail(destination_filename)
 
-    url = get_media_url(destination_filename)
+    url = get_media_url(destination_filename, getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username)
 
     # respond with javascript sending ckeditor upload url.
     return HttpResponse("""
@@ -104,17 +114,24 @@ def upload(request):
     </script>""" % (request.GET['CKEditorFuncNum'], url))
 
 def browse(request):
-    uploads = os.listdir(settings.CKEDITOR_UPLOAD_PATH)
+    if getattr(settings, "CKEDITOR_PER_USER", False):
+        uploads = os.listdir(get_user_dir(request.user.username))
+    else:
+        uploads = os.listdir(settings.CKEDITOR_UPLOAD_PATH)
     
     images = []
     for upload in uploads:
         # bypass for thumbs
         if '_thumb' in upload:
             continue
-        filename = os.path.join(settings.CKEDITOR_UPLOAD_PATH, upload)
+        if getattr(settings, "CKEDITOR_PER_USER", False):
+            filename = os.path.join(get_user_dir(request.user.username), upload)
+        else:
+            filename = os.path.join(settings.CKEDITOR_UPLOAD_PATH, upload)
+	print filename
         images.append({
-            'thumb': get_media_url(get_thumb_filename(filename)),
-            'src': get_media_url(filename)
+            'thumb': get_media_url(get_thumb_filename(filename), getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username),
+            'src': get_media_url(filename, getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username)
         })
    
     context = RequestContext(request, {
