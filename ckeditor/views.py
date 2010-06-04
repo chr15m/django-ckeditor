@@ -4,8 +4,14 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.views.decorators.csrf import csrf_exempt
-            
+try:
+    from django.views.decorators.csrf import csrf_exempt
+except ImportError:
+    # monkey patch this with a dummy decorator which just returns the same function
+    # (for compatability with pre-1.1 Djangos)
+    def csrf_exempt(fn):
+        return fn
+        
 from PIL import Image, ImageOps
             
 THUMBNAIL_SIZE = (75, 75)
