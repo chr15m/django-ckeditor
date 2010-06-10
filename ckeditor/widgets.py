@@ -20,18 +20,20 @@ class CKEditorWidget(forms.Textarea):
     def render(self, name, value, attrs={}):
         if value is None: value = ''
         final_attrs = self.build_attrs(attrs, name=name)
+        default_editor_options = {
+            'skin': "v2",
+            'toolbar': "Full",
+            'height': "291", 
+            'width': "618",
+            'filebrowserUploadUrl': reverse('ckeditor_upload'),
+            'filebrowserBrowseUrl': reverse('ckeditor_browse'),
+            'filebrowserWindowWidth': '940',
+            'filebrowserWindowHeight': '747',
+        }
+        default_editor_options.update(getattr(settings, "CKEDITOR_OPTIONS", {}))
         return mark_safe(u'''<textarea%s>%s</textarea>
         <script type="text/javascript">
             CKEDITOR.replace("%s",
-                {
-                    skin: "v2",
-                    toolbar : "Full",
-                    height:"291", 
-                    width:"618",
-                    filebrowserUploadUrl : "%s",
-                    filebrowserBrowseUrl : "%s",
-                    filebrowserWindowWidth : '940',
-                    filebrowserWindowHeight : '747'
-                }
+                    %s
             );
-        </script>''' % (flatatt(final_attrs), conditional_escape(force_unicode(value)), final_attrs['id'], reverse('ckeditor_upload'), reverse('ckeditor_browse')))
+        </script>''' % (flatatt(final_attrs), conditional_escape(force_unicode(value)), final_attrs['id'], str(default_editor_options)))

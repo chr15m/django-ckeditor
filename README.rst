@@ -32,6 +32,12 @@ Installation
 
 (If CKEDITOR_UPLOAD_PREFIX is not provided, the media URL will fall back to MEDIA_URL with the difference of MEDIA_ROOT and CKEDITOR_UPLOAD_PATH appended.)
 
+#. Optionally, add a CKEDITOR_OPTIONS setting to the project's ``settings.py`` file. This setting should be a dictionary of options passed to the CKEDITOR.replace() javascript method. This allows you to customise the way the ckeditor instance appears::
+
+    CKEDITOR_OPTIONS = {"toolbar": "Basic"}
+
+Check out the CKEditor documentation for more details: http://docs.cksource.com/CKEditor_3.x/Developers_Guide/Toolbar
+
 Usage
 -----
 
