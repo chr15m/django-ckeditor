@@ -111,13 +111,16 @@ def upload(request):
 
     url = get_media_url(destination_filename, getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username)
 
-    # respond with javascript sending ckeditor upload url.
-    return HttpResponse("""
-    <script type='text/javascript'>
-        window.parent.CKEDITOR.tools.callFunction(%s, '%s');
-    </script>""" % (request.GET['CKEditorFuncNum'], url))
+    # respond with javascript sending ckeditor upload url, if present, otherwise return the browse request
+    if request.GET.has_key('CKEditorFuncNum'):
+        return HttpResponse("""
+        <script type='text/javascript'>
+            window.parent.CKEDITOR.tools.callFunction(%s, '%s');
+        </script>""" % (request.GET['CKEditorFuncNum'], url))
+    else:
+        return browse(request, selected_filename=destination_filename)
 
-def browse(request):
+def browse(request, selected_filename=None):
     if getattr(settings, "CKEDITOR_PER_USER", False):
         uploads = os.listdir(get_user_dir(request.user.username))
     else:
@@ -135,7 +138,8 @@ def browse(request):
 	print filename
         images.append({
             'thumb': get_media_url(get_thumb_filename(filename), getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username),
-            'src': get_media_url(filename, getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username)
+            'src': get_media_url(filename, getattr(settings, "CKEDITOR_PER_USER", False) and request.user.username),
+            'selected': (selected_filename == filename and "selected" or "")
         })
    
     context = RequestContext(request, {
