@@ -75,7 +75,11 @@
             $('.embed').live('click', function() {
                 var funcNum = getUrlParam('CKEditorFuncNum');
                 var fileUrl = $(this).attr('href');
-                window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);
+                if (funcNum) {
+                    window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);
+		} else {
+                    window.opener[getUrlParam('callback')](fileUrl);
+		}
                 window.close();
             });
 
