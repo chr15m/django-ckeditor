@@ -85,3 +85,18 @@ ChangeLog
 +++++
 
 #. Included README.rst in manifest.
+
+0.0.3
++++++
+
+#. More robust PIL import, thanks Dusty Phillips.
+#. Better CKEDITOR_MEDIA_PREFIX setting error.
+
+0.0.4
++++++
+
+#. Include resources, sorry about that.
+
+0.0.5
++++++
+#. csrf_exempt backwards compatability. Thanks chr15m for the patch.
