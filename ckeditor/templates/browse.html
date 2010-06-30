@@ -48,7 +48,7 @@
                         {% endfor %}
 					</ul>
 				</div>
-				<div style="clear: both;"><form method='POST' action="{% url ckeditor_upload %}" enctype="multipart/form-data"><input type='file' name='upload'><input type='submit' value='upload'></form></div>
+				<div style="clear: both;"><form method='POST' action="{% url ckeditor_upload %}?CKEditor={{ CKEditor }}&CKEditorFuncNum={{ CKEditorFuncNum }}&callback={{ callback }}" enctype="multipart/form-data"><input type='file' name='upload'><input type='submit' value='upload'></form></div>
 			</div>
 		</div>
 		<script type="text/javascript">
